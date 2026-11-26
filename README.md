@@ -85,9 +85,10 @@ ifIndex OBJECT-TYPE
 
 ## Development
 
-The tree-sitter CLI is pinned in `package.json` (and in the workflows), and CI
-fails if `src/` differs from what that version generates. Use the pinned CLI
-through `npx` rather than a globally installed one:
+The tree-sitter CLI is pinned to an exact version as `tree-sitter-cli` in
+`package.json`, and CI and the release workflow install that same version. CI
+fails if `src/` differs from what it generates, so use the pinned CLI through
+`npx` rather than a globally installed one:
 
 ```sh
 npm install
@@ -100,8 +101,8 @@ git clone https://github.com/netdisco/netdisco-mibs /tmp/netdisco-mibs
 PATH="$PWD/node_modules/.bin:$PATH" scripts/check-corpus.sh /tmp/netdisco-mibs
 ```
 
-To move to a newer CLI, bump `tree-sitter-cli` in `package.json` and
-`TREE_SITTER_VERSION` in both workflows together, then regenerate and commit.
+To move to a newer CLI, change the pinned version in `package.json`, run
+`npm install` and `npx tree-sitter generate`, and commit the result.
 
 The grammar is in `grammar.js`, the tests are in `test/corpus`,
 `test/highlight` and `test/tags`, and `examples/` holds a sample module.
@@ -115,18 +116,20 @@ Everything is configured in `tree-sitter.json`.
   requests, on Linux, macOS and Windows. It checks that `src/` is up to date,
   runs `tree-sitter test`, tests the Rust, Node and Python bindings, and
   re-parses the netdisco-mibs corpus.
-- **Release** (`.github/workflows/release.yml`) runs when a `v*` tag is pushed:
+- **Release** (`.github/workflows/release.yml`) runs when a release is
+  published on GitHub (**Releases → Draft a new release**, choose a tag such
+  as `v0.2.0`, then **Publish release**). The tag is the version: the package
+  manifests in the repository stay at a `0.0.0` placeholder, and each release
+  job writes the tag's version into them before building. Nothing needs to be
+  bumped or committed beforehand.
 
-  ```sh
-  npx tree-sitter version 0.2.0      # updates every manifest
-  git commit -am "Release 0.2.0" && git tag v0.2.0 && git push --follow-tags
-  ```
-
-  It checks that the tag matches every manifest's version, runs the tests, and
-  creates a GitHub release with a Wasm build and a complete source tarball.
-  Publishing to npm, crates.io and PyPI is opt-in: set the repository variable
-  `PUBLISH_NPM`, `PUBLISH_CRATES` or `PUBLISH_PYPI` to `true` and add the
-  matching secret `NPM_TOKEN`, `CARGO_REGISTRY_TOKEN` or `PYPI_API_TOKEN`.
+  Every release gets a Wasm build and a complete source tarball attached, with
+  build-provenance attestations. Publishing to npm, crates.io and PyPI is
+  opt-in: set the repository variable `PUBLISH_NPM`, `PUBLISH_CRATES` or
+  `PUBLISH_PYPI` to `true` and add the matching secret `NPM_TOKEN`,
+  `CARGO_REGISTRY_TOKEN` or `PYPI_API_TOKEN`. Releases marked as a
+  pre-release get the GitHub assets but are not published to registries.
+  Tags must look like `v1.2.3`.
 
 ## License
 
