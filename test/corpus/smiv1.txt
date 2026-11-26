@@ -1,0 +1,111 @@
+================================================================================
+SMIv1 OBJECT-TYPE
+================================================================================
+
+RFC1213-MIB DEFINITIONS ::= BEGIN
+sysDescr OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "A textual description of the entity."
+    ::= { system 1 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (defined_type
+          (type_reference)
+          (constraint
+            (size_constraint
+              (value_range_list
+                (value_range
+                  (number)
+                  (number)))))))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))))
+
+================================================================================
+SMIv1 TRAP-TYPE
+================================================================================
+
+RFC-1215 DEFINITIONS ::= BEGIN
+linkDown TRAP-TYPE
+    ENTERPRISE  snmp
+    VARIABLES   { ifIndex }
+    DESCRIPTION "A linkDown trap."
+    ::= 2
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (trap_type
+      (identifier)
+      (enterprise_clause
+        (identifier))
+      (variables_clause
+        (object_list
+          (identifier)))
+      (description_clause
+        (string))
+      (number))))
+
+================================================================================
+Tagged application types
+================================================================================
+
+RFC1155-SMI DEFINITIONS ::= BEGIN
+IpAddress ::= [APPLICATION 0] IMPLICIT OCTET STRING (SIZE (4))
+Counter ::= [APPLICATION 1] IMPLICIT INTEGER (0..4294967295)
+ObjectName ::= OBJECT IDENTIFIER
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (type_assignment
+      (type_reference)
+      (tagged_type
+        (tag
+          (number))
+        (octet_string_type
+          (constraint
+            (size_constraint
+              (value_range_list
+                (value_range
+                  (number))))))))
+    (type_assignment
+      (type_reference)
+      (tagged_type
+        (tag
+          (number))
+        (integer_type
+          (constraint
+            (value_range_list
+              (value_range
+                (number)
+                (number)))))))
+    (type_assignment
+      (type_reference)
+      (object_identifier_type))))

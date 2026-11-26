@@ -1,0 +1,98 @@
+================================================================================
+MACRO definition
+================================================================================
+
+SNMPv2-SMI DEFINITIONS ::= BEGIN
+OBJECT-TYPE MACRO ::=
+BEGIN
+    TYPE NOTATION ::= "SYNTAX" Syntax
+                      UnitsPart
+    VALUE NOTATION ::= value(VALUE ObjectName)
+    UnitsPart ::= "UNITS" Text | empty
+END
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (macro_definition
+      (macro_name)
+      (macro_body
+        (type_reference)
+        (type_reference)
+        (string)
+        (type_reference)
+        (type_reference)
+        (type_reference)
+        (type_reference)
+        (identifier)
+        (type_reference)
+        (type_reference)
+        (type_reference)
+        (string)
+        (type_reference)
+        (identifier)))))
+
+================================================================================
+CHOICE type
+================================================================================
+
+SNMPv2-SMI DEFINITIONS ::= BEGIN
+SimpleSyntax ::= CHOICE {
+    integer-value  INTEGER (-2147483648..2147483647),
+    string-value   OCTET STRING (SIZE (0..65535)),
+    objectID-value OBJECT IDENTIFIER
+}
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (type_assignment
+      (type_reference)
+      (choice_type
+        (named_type
+          (identifier)
+          (integer_type
+            (constraint
+              (value_range_list
+                (value_range
+                  (negative_number)
+                  (number))))))
+        (named_type
+          (identifier)
+          (octet_string_type
+            (constraint
+              (size_constraint
+                (value_range_list
+                  (value_range
+                    (number)
+                    (number)))))))
+        (named_type
+          (identifier)
+          (object_identifier_type))))))
+
+================================================================================
+Value assignment
+================================================================================
+
+V-MIB DEFINITIONS ::= BEGIN
+maxWidgets INTEGER ::= 42
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (value_assignment
+      (identifier)
+      (integer_type)
+      (number))))

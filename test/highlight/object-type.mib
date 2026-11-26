@@ -1,0 +1,49 @@
+HL-MIB DEFINITIONS ::= BEGIN
+-- <- module
+--     ^ keyword
+--                 ^ operator
+
+IMPORTS OBJECT-TYPE FROM SNMPv2-SMI;
+-- <- keyword.import
+--      ^ keyword.type
+--                  ^ keyword.import
+--                       ^ module
+
+hlCount OBJECT-TYPE
+-- <- function
+--      ^ keyword.type
+    SYNTAX      Integer32 (0..10)
+--  ^ keyword
+--              ^ type
+--                         ^ number
+--                          ^ operator
+    MAX-ACCESS  read-only
+--  ^ keyword
+--              ^ constant.builtin
+    STATUS      current
+--              ^ constant.builtin
+    DESCRIPTION "A counter."
+--              ^ string
+    ::= { hlObjects 1 }
+--        ^ variable
+--                  ^ number
+
+hlMode OBJECT-TYPE
+    SYNTAX      INTEGER { on(1), off(2) }
+--              ^ type.builtin
+--                        ^ constant
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION "Mode."
+    DEFVAL      { 'FF'H }
+--                ^ string.special
+    ::= { hlObjects 2 }
+
+HlEntry ::= SEQUENCE { hlCount Integer32 }
+-- <- type.definition
+--          ^ type.builtin
+--                     ^ property
+--                             ^ type
+
+END
+-- <- keyword

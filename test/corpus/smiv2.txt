@@ -1,0 +1,377 @@
+================================================================================
+MODULE-IDENTITY with revisions
+================================================================================
+
+IF-MIB DEFINITIONS ::= BEGIN
+ifMIB MODULE-IDENTITY
+    LAST-UPDATED "200006140000Z"
+    ORGANIZATION "IETF Interfaces MIB Working Group"
+    CONTACT-INFO "Keith McCloghrie"
+    DESCRIPTION  "The MIB module."
+    REVISION     "200006140000Z"
+    DESCRIPTION  "Clarifications."
+    REVISION     "199602282155Z"
+    DESCRIPTION  "Revisions made by the Interfaces MIB WG."
+    ::= { mib-2 31 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (module_identity
+      (identifier)
+      (last_updated_clause
+        (string))
+      (organization_clause
+        (string))
+      (contact_info_clause
+        (string))
+      (description_clause
+        (string))
+      (revision_clause
+        (string)
+        (string))
+      (revision_clause
+        (string)
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))))
+
+================================================================================
+TEXTUAL-CONVENTION
+================================================================================
+
+SNMPv2-TC DEFINITIONS ::= BEGIN
+TruthValue ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "Represents a boolean value."
+    SYNTAX       INTEGER { true(1), false(2) }
+
+DisplayString ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "255a"
+    STATUS       current
+    DESCRIPTION  "Text."
+    REFERENCE    "RFC 2579"
+    SYNTAX       OCTET STRING (SIZE (0..255))
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (textual_convention
+      (type_reference)
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (syntax_clause
+        (integer_type
+          (named_number_list
+            (named_number
+              (identifier)
+              (number))
+            (named_number
+              (identifier)
+              (number))))))
+    (textual_convention
+      (type_reference)
+      (display_hint_clause
+        (string))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (reference_clause
+        (string))
+      (syntax_clause
+        (octet_string_type
+          (constraint
+            (size_constraint
+              (value_range_list
+                (value_range
+                  (number)
+                  (number))))))))))
+
+================================================================================
+Table, row, and columns
+================================================================================
+
+T-MIB DEFINITIONS ::= BEGIN
+fooTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF FooEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Table."
+    ::= { foo 1 }
+
+fooEntry OBJECT-TYPE
+    SYNTAX      FooEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Row."
+    INDEX       { fooIndex, IMPLIED fooName }
+    ::= { fooTable 1 }
+
+barEntry OBJECT-TYPE
+    SYNTAX      BarEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Row."
+    AUGMENTS    { fooEntry }
+    ::= { barTable 1 }
+
+FooEntry ::= SEQUENCE {
+    fooIndex  Integer32,
+    fooName   OCTET STRING,
+    fooFlags  BITS
+}
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (sequence_of_type
+          (defined_type
+            (type_reference))))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (defined_type
+          (type_reference)))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (index_clause
+        (index_item
+          (identifier))
+        (index_item
+          (identifier)))
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (defined_type
+          (type_reference)))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (augments_clause
+        (identifier))
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (type_assignment
+      (type_reference)
+      (sequence_type
+        (named_type
+          (identifier)
+          (defined_type
+            (type_reference)))
+        (named_type
+          (identifier)
+          (octet_string_type))
+        (named_type
+          (identifier)
+          (bits_type))))))
+
+================================================================================
+DEFVAL forms
+================================================================================
+
+D-MIB DEFINITIONS ::= BEGIN
+a OBJECT-TYPE
+    SYNTAX      Integer32 (-1..10 | 20)
+    UNITS       "seconds"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION "a"
+    DEFVAL      { -1 }
+    ::= { d 1 }
+b OBJECT-TYPE
+    SYNTAX      BITS { on(0), off(1) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION "b"
+    DEFVAL      { { on, off } }
+    ::= { d 2 }
+c OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION "c"
+    DEFVAL      { '00FF'H }
+    ::= { d 3 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (defined_type
+          (type_reference)
+          (constraint
+            (value_range_list
+              (value_range
+                (negative_number)
+                (number))
+              (value_range
+                (number))))))
+      (units_clause
+        (string))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (defval_clause
+        (negative_number))
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (bits_type
+          (named_number_list
+            (named_number
+              (identifier)
+              (number))
+            (named_number
+              (identifier)
+              (number)))))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (defval_clause
+        (braced_value
+          (identifier)
+          (identifier)))
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (octet_string_type))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (defval_clause
+        (hex_string))
+      (object_identifier_value
+        (identifier)
+        (number)))))
+
+================================================================================
+NOTIFICATION-TYPE and OBJECT-IDENTITY
+================================================================================
+
+N-MIB DEFINITIONS ::= BEGIN
+linkUp NOTIFICATION-TYPE
+    OBJECTS { ifIndex, ifAdminStatus }
+    STATUS  current
+    DESCRIPTION "Up."
+    ::= { snmpTraps 4 }
+zeroDotZero OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION "A null OID."
+    ::= { 0 0 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (notification_type
+      (identifier)
+      (objects_clause
+        (object_list
+          (identifier)
+          (identifier)))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (object_identity
+      (identifier)
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (number)
+        (number)))))
+
+================================================================================
+Strings with doubled quotes
+================================================================================
+
+S-MIB DEFINITIONS ::= BEGIN
+s OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION "say ""hi"" -- not a comment"
+    ::= { x 1 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (object_identity
+      (identifier)
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))))

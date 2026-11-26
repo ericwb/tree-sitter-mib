@@ -1,0 +1,181 @@
+================================================================================
+Vendor upper-case object names and labels
+================================================================================
+
+V-MIB DEFINITIONS ::= BEGIN
+TrafficShield4100 OBJECT IDENTIFIER ::= { models 41 }
+x OBJECT-TYPE
+    SYNTAX      INTEGER { TRUE(1), FALSE(0) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "x"
+    DEFVAL      { FALSE }
+    ::= { TrafficShield4100 1 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (object_identifier_assignment
+      (identifier)
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (integer_type
+          (named_number_list
+            (named_number
+              (identifier)
+              (number))
+            (named_number
+              (identifier)
+              (number)))))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (defval_clause
+        (identifier))
+      (object_identifier_value
+        (identifier)
+        (number)))))
+
+================================================================================
+Missing commas and trailing commas
+================================================================================
+
+V-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    Integer32
+    OBJECT-TYPE FROM SNMPv2-SMI;
+Row ::= SEQUENCE {
+    a Integer32
+    b OCTET STRING,
+}
+y OBJECT-TYPE
+    SYNTAX      INTEGER { on(1) off(2), }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "y"
+    ::= { v 1 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (imports
+      (import_group
+        (symbol_list
+          (type_reference)
+          (macro_name))
+        (module_reference
+          (type_reference))))
+    (type_assignment
+      (type_reference)
+      (sequence_type
+        (named_type
+          (identifier)
+          (defined_type
+            (type_reference)))
+        (named_type
+          (identifier)
+          (octet_string_type))))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (integer_type
+          (named_number_list
+            (named_number
+              (identifier)
+              (number))
+            (named_number
+              (identifier)
+              (number)))))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))))
+
+================================================================================
+Lower-case type names and numeric labels
+================================================================================
+
+V-MIB DEFINITIONS ::= BEGIN
+fooEntry ::= SEQUENCE { fooIndex Integer32 }
+fooTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF fooEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "t"
+    ::= { v 1 }
+speed OBJECT-TYPE
+    SYNTAX      INTEGER { 10mbitHalfDuplex(1), 100mbitFullDuplex(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "s"
+    ::= { v 2 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (type_assignment
+      (type_reference)
+      (sequence_type
+        (named_type
+          (identifier)
+          (defined_type
+            (type_reference)))))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (sequence_of_type
+          (defined_type
+            (type_reference))))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (object_type
+      (identifier)
+      (syntax_clause
+        (integer_type
+          (named_number_list
+            (named_number
+              (identifier)
+              (number))
+            (named_number
+              (identifier)
+              (number)))))
+      (access_clause
+        (access))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))))

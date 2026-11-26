@@ -1,0 +1,156 @@
+EXAMPLE-WIDGET-MIB DEFINITIONS ::= BEGIN
+
+-- An SMIv2 module that exercises most of the grammar.
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32, Unsigned32, Counter64, enterprises
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, DisplayString, RowStatus, TruthValue
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    InterfaceIndex
+        FROM IF-MIB;
+
+exampleWidgetMIB MODULE-IDENTITY
+    LAST-UPDATED "202611250000Z"
+    ORGANIZATION "Example Widgets"
+    CONTACT-INFO "widgets@example.com"
+    DESCRIPTION
+        "Management of example widgets. Strings may span lines
+        and contain ""doubled"" quotes and -- dashes."
+    REVISION     "202611250000Z"
+    DESCRIPTION  "Initial revision."
+    ::= { enterprises 99999 }
+
+widgetObjects     OBJECT IDENTIFIER ::= { exampleWidgetMIB 1 }
+widgetConformance OBJECT IDENTIFIER ::= { exampleWidgetMIB 2 }
+
+WidgetColor ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION  "The color of a widget."
+    SYNTAX       INTEGER { red(1), green(2), blue(3) }
+
+WidgetSerial ::= OCTET STRING (SIZE (8 | 16))
+
+widgetTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF WidgetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "The widget table."
+    ::= { widgetObjects 1 }
+
+widgetEntry OBJECT-TYPE
+    SYNTAX      WidgetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "A widget."
+    INDEX       { widgetIfIndex, IMPLIED widgetName }
+    ::= { widgetTable 1 }
+
+WidgetEntry ::= SEQUENCE {
+    widgetIfIndex   InterfaceIndex,
+    widgetName      DisplayString,
+    widgetColor     WidgetColor,
+    widgetSpeed     Integer32,
+    widgetFlags     BITS,
+    widgetSpins     Counter64,
+    widgetEnabled   TruthValue,
+    widgetStatus    RowStatus
+}
+
+widgetIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Interface the widget is attached to."
+    ::= { widgetEntry 1 }
+
+widgetName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Name of the widget."
+    ::= { widgetEntry 2 }
+
+widgetColor OBJECT-TYPE
+    SYNTAX      WidgetColor
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Color of the widget."
+    DEFVAL      { green }
+    ::= { widgetEntry 3 }
+
+widgetSpeed OBJECT-TYPE
+    SYNTAX      Integer32 (-100..100)
+    UNITS       "rpm"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Rotational speed; negative is counter-clockwise."
+    DEFVAL      { 0 }
+    ::= { widgetEntry 4 }
+
+widgetFlags OBJECT-TYPE
+    SYNTAX      BITS { polished(0), painted(1), boxed(2) }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Finishing steps applied."
+    DEFVAL      { { polished, boxed } }
+    ::= { widgetEntry 5 }
+
+widgetSpins OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Total revolutions."
+    ::= { widgetEntry 6 }
+
+widgetEnabled OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Whether the widget spins."
+    DEFVAL      { true }
+    ::= { widgetEntry 7 }
+
+widgetStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION "Row status."
+    ::= { widgetEntry 8 }
+
+widgetJammed NOTIFICATION-TYPE
+    OBJECTS     { widgetName, widgetSpeed }
+    STATUS      current
+    DESCRIPTION "A widget stopped spinning."
+    ::= { exampleWidgetMIB 0 1 }
+
+widgetCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION "Compliance for widget agents."
+    MODULE      -- this module
+        MANDATORY-GROUPS { widgetGroup }
+        GROUP       widgetNotificationGroup
+        DESCRIPTION "Required only if notifications are sent."
+        OBJECT      widgetColor
+        MIN-ACCESS  read-only
+        DESCRIPTION "Write access is not required."
+    ::= { widgetConformance 1 }
+
+widgetGroup OBJECT-GROUP
+    OBJECTS     { widgetColor, widgetSpeed, widgetFlags, widgetSpins,
+                  widgetEnabled, widgetStatus }
+    STATUS      current
+    DESCRIPTION "Widget objects."
+    ::= { widgetConformance 2 }
+
+widgetNotificationGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { widgetJammed }
+    STATUS        current
+    DESCRIPTION   "Widget notifications."
+    ::= { widgetConformance 3 }
+
+END

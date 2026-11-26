@@ -1,0 +1,180 @@
+================================================================================
+MODULE-COMPLIANCE
+================================================================================
+
+C-MIB DEFINITIONS ::= BEGIN
+ifCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION "Compliance."
+    MODULE  -- this module
+        MANDATORY-GROUPS { ifGeneralGroup, ifStackGroup }
+        GROUP       ifFixedLengthGroup
+        DESCRIPTION "Mandatory for fixed-length interfaces."
+        OBJECT      ifLinkUpDownTrapEnable
+        SYNTAX      INTEGER { enabled(1) }
+        MIN-ACCESS  read-only
+        DESCRIPTION "Write access is not required."
+    MODULE SNMPv2-MIB
+        MANDATORY-GROUPS { systemGroup }
+    ::= { ifCompliances 1 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (module_compliance
+      (identifier)
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (compliance_module
+        (comment)
+        (mandatory_groups_clause
+          (object_list
+            (identifier)
+            (identifier)))
+        (compliance_group
+          (identifier)
+          (description_clause
+            (string)))
+        (compliance_object
+          (identifier)
+          (syntax_clause
+            (integer_type
+              (named_number_list
+                (named_number
+                  (identifier)
+                  (number)))))
+          (access_clause
+            (access))
+          (description_clause
+            (string))))
+      (compliance_module
+        (module_reference
+          (type_reference))
+        (mandatory_groups_clause
+          (object_list
+            (identifier))))
+      (object_identifier_value
+        (identifier)
+        (number)))))
+
+================================================================================
+OBJECT-GROUP and NOTIFICATION-GROUP
+================================================================================
+
+G-MIB DEFINITIONS ::= BEGIN
+g OBJECT-GROUP
+    OBJECTS { a, b }
+    STATUS  current
+    DESCRIPTION "Objects."
+    ::= { groups 1 }
+n NOTIFICATION-GROUP
+    NOTIFICATIONS { linkUp, linkDown }
+    STATUS  current
+    DESCRIPTION "Notifications."
+    ::= { groups 2 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (object_group
+      (identifier)
+      (objects_clause
+        (object_list
+          (identifier)
+          (identifier)))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (notification_group
+      (identifier)
+      (notifications_clause
+        (object_list
+          (identifier)
+          (identifier)))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (object_identifier_value
+        (identifier)
+        (number)))))
+
+================================================================================
+AGENT-CAPABILITIES
+================================================================================
+
+A-MIB DEFINITIONS ::= BEGIN
+exampleAgent AGENT-CAPABILITIES
+    PRODUCT-RELEASE "Example agent 1.0"
+    STATUS          current
+    DESCRIPTION     "An agent."
+    SUPPORTS        IF-MIB
+        INCLUDES    { ifGeneralGroup }
+        VARIATION   ifAdminStatus
+            SYNTAX      INTEGER { up(1), down(2) }
+            DESCRIPTION "No testing."
+        VARIATION   ifStackStatus
+            ACCESS      read-only
+            CREATION-REQUIRES { ifStackStatus }
+            DESCRIPTION "Read-only."
+    ::= { exampleCaps 1 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (agent_capabilities
+      (identifier)
+      (product_release_clause
+        (string))
+      (status_clause
+        (status))
+      (description_clause
+        (string))
+      (supports_module
+        (module_reference
+          (type_reference))
+        (object_list
+          (identifier))
+        (variation
+          (identifier)
+          (syntax_clause
+            (integer_type
+              (named_number_list
+                (named_number
+                  (identifier)
+                  (number))
+                (named_number
+                  (identifier)
+                  (number)))))
+          (description_clause
+            (string)))
+        (variation
+          (identifier)
+          (access_clause
+            (access))
+          (creation_requires_clause
+            (object_list
+              (identifier)))
+          (description_clause
+            (string))))
+      (object_identifier_value
+        (identifier)
+        (number)))))

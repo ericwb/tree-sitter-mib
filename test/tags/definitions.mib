@@ -1,0 +1,23 @@
+TAG-MIB DEFINITIONS ::= BEGIN
+-- <- definition.module
+
+tagRoot OBJECT IDENTIFIER ::= { enterprises 1 }
+-- <- definition.constant
+--                              ^ reference.constant
+
+TagType ::= TEXTUAL-CONVENTION
+-- <- definition.type
+    STATUS      current
+    DESCRIPTION "t"
+    SYNTAX      Integer32
+--              ^ reference.type
+
+tagValue OBJECT-TYPE
+-- <- definition.constant
+    SYNTAX      TagType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "v"
+    ::= { tagRoot 1 }
+
+END

@@ -1,0 +1,128 @@
+================================================================================
+Empty module
+================================================================================
+
+EMPTY-MIB DEFINITIONS ::= BEGIN
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))))
+
+================================================================================
+Imports and object identifiers
+================================================================================
+
+FOO-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, mib-2 FROM SNMPv2-SMI
+    DisplayString FROM SNMPv2-TC;
+
+internet OBJECT IDENTIFIER ::= { iso org(3) dod(6) 1 }
+foo      OBJECT IDENTIFIER ::= { mib-2 999 }
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (imports
+      (import_group
+        (symbol_list
+          (macro_name)
+          (macro_name)
+          (type_reference)
+          (identifier))
+        (module_reference
+          (type_reference)))
+      (import_group
+        (symbol_list
+          (type_reference))
+        (module_reference
+          (type_reference))))
+    (object_identifier_assignment
+      (identifier)
+      (object_identifier_value
+        (identifier)
+        (named_number
+          (identifier)
+          (number))
+        (named_number
+          (identifier)
+          (number))
+        (number)))
+    (object_identifier_assignment
+      (identifier)
+      (object_identifier_value
+        (identifier)
+        (number)))))
+
+================================================================================
+Exports
+================================================================================
+
+RFC1155-SMI DEFINITIONS ::= BEGIN
+EXPORTS -- EVERYTHING
+    internet, OBJECT-TYPE, ObjectName;
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (exports
+      (comment)
+      (identifier)
+      (macro_name)
+      (type_reference))))
+
+================================================================================
+Comments
+================================================================================
+
+C-MIB DEFINITIONS ::= BEGIN
+-- a comment
+---------------------------------------
+x OBJECT IDENTIFIER ::= { y 1 } -- trailing
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference))
+    (comment)
+    (comment)
+    (object_identifier_assignment
+      (identifier)
+      (object_identifier_value
+        (identifier)
+        (number)))
+    (comment)))
+
+================================================================================
+Multiple modules in one file
+================================================================================
+
+A-MIB DEFINITIONS ::= BEGIN
+END
+B-MIB DEFINITIONS ::= BEGIN
+END
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_definition
+    (module_reference
+      (type_reference)))
+  (module_definition
+    (module_reference
+      (type_reference))))
