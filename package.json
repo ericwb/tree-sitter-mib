@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-mib",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "SNMP MIB (SMIv1/SMIv2) grammar for tree-sitter",
   "type": "module",
   "repository": "https://github.com/ericwb/tree-sitter-mib",
