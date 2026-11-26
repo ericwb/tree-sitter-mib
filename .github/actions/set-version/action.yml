@@ -1,9 +1,9 @@
 name: Set release version
 description: >-
   Write a release version into every package manifest (tree-sitter.json,
-  package.json, Cargo.toml, pyproject.toml, CMakeLists.txt, Makefile).
-  The repository keeps 0.0.0 as a placeholder; the release tag is the
-  source of truth.
+  package.json, Cargo.toml, pyproject.toml, CMakeLists.txt, Makefile) and
+  into the language metadata in src/parser.c. The repository keeps 0.0.0 as
+  a placeholder; the release tag is the source of truth.
 
 inputs:
   version:
@@ -16,10 +16,18 @@ runs:
     - name: Set up tree-sitter CLI
       uses: ./.github/actions/setup-cli
 
+    # The generated parser records the version too (ts_language_metadata), so
+    # patch it to match instead of regenerating, which would need Node.js.
     - name: Write version
       shell: bash
       run: |
         tree-sitter version "$VERSION"
+        IFS=. read -r major minor patch <<< "$VERSION"
+        perl -0pi -e "s/\.major_version = \d+,(\s*)\.minor_version = \d+,(\s*)\.patch_version = \d+,/.major_version = $major,\1.minor_version = $minor,\2.patch_version = $patch,/" src/parser.c
+        if ! grep -q "\.patch_version = $patch," src/parser.c; then
+          echo "::error file=src/parser.c::could not set the version metadata"
+          exit 1
+        fi
         tree-sitter version
       env:
         VERSION: ${{ inputs.version }}
