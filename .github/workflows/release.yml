@@ -1,0 +1,144 @@
+name: Release
+
+# Push a tag such as v0.2.0 to publish a release. Bump the version everywhere
+# first with `npx tree-sitter version 0.2.0` and commit the result.
+#
+# The GitHub release (Wasm build + full source tarball) always runs. Publishing
+# to package registries is opt-in per registry: set the repository variable and
+# add the matching secret under Settings > Secrets and variables > Actions.
+#
+#   Registry   Variable              Secret
+#   npm        PUBLISH_NPM=true      NPM_TOKEN
+#   crates.io  PUBLISH_CRATES=true   CARGO_REGISTRY_TOKEN
+#   PyPI       PUBLISH_PYPI=true     PYPI_API_TOKEN
+
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TREE_SITTER_VERSION: v0.27.2
+
+jobs:
+  verify:
+    name: Verify version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Check tag matches package versions
+        shell: bash
+        run: |
+          tag=${GITHUB_REF_NAME#v}
+          declare -A versions=(
+            [tree-sitter.json]=$(jq -r .metadata.version tree-sitter.json)
+            [package.json]=$(jq -r .version package.json)
+            [Cargo.toml]=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+            [pyproject.toml]=$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -1)
+            [CMakeLists.txt]=$(sed -n 's/^ *VERSION "\(.*\)"/\1/p' CMakeLists.txt | head -1)
+            [Makefile]=$(sed -n 's/^VERSION := //p' Makefile)
+          )
+          status=0
+          for file in "${!versions[@]}"; do
+            if [[ ${versions[$file]} != "$tag" ]]; then
+              echo "::error file=$file::version ${versions[$file]} does not match tag $GITHUB_REF_NAME"
+              status=1
+            fi
+          done
+          if (( status )); then
+            echo "Run 'npx tree-sitter version $tag', commit, and re-tag."
+          fi
+          exit $status
+
+  test:
+    name: Test
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up tree-sitter CLI
+        uses: tree-sitter/setup-action/cli@v2
+        with:
+          tree-sitter-ref: ${{ env.TREE_SITTER_VERSION }}
+
+      - name: Test parser
+        uses: tree-sitter/parser-test-action@v3
+
+  github:
+    name: GitHub release
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      REPO_NAME: ${{ github.event.repository.name }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up tree-sitter CLI
+        uses: tree-sitter/setup-action/cli@v2
+        with:
+          tree-sitter-ref: ${{ env.TREE_SITTER_VERSION }}
+
+      - name: Build Wasm binary
+        run: tree-sitter build --wasm
+
+      - name: Create source tarball
+        run: git ls-files | tar czf "$REPO_NAME.tar.gz" -T -
+
+      # Build provenance attestations are not available for private repositories
+      # on personal accounts, so this step only runs once the repo is public.
+      - name: Generate attestations
+        if: ${{ !github.event.repository.private }}
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: |
+            *.wasm
+            ${{ env.REPO_NAME }}.tar.gz
+
+      - name: Create GitHub release
+        run: |
+          gh release create "$GITHUB_REF_NAME" ./*.wasm "$REPO_NAME.tar.gz" \
+            --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  # The reusable workflows below are pinned to a commit of tree-sitter/workflows
+  # (its v1 tag predates the current release workflow).
+
+  npm:
+    name: Publish to npm
+    needs: test
+    if: ${{ vars.PUBLISH_NPM == 'true' }}
+    uses: tree-sitter/workflows/.github/workflows/package-npm.yml@dca539e07998ac429e185349d3dd194d2c7418d3
+    secrets:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  crates:
+    name: Publish to crates.io
+    needs: test
+    if: ${{ vars.PUBLISH_CRATES == 'true' }}
+    uses: tree-sitter/workflows/.github/workflows/package-crates.yml@dca539e07998ac429e185349d3dd194d2c7418d3
+    secrets:
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  pypi:
+    name: Publish to PyPI
+    needs: test
+    if: ${{ vars.PUBLISH_PYPI == 'true' }}
+    uses: tree-sitter/workflows/.github/workflows/package-pypi.yml@dca539e07998ac429e185349d3dd194d2c7418d3
+    secrets:
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

@@ -38,7 +38,7 @@ const MACRO_NAMES = [
   'TRAP-TYPE',
 ];
 
-module.exports = grammar({
+export default grammar({
   name: 'mib',
 
   extras: ($) => [/\s/, $.comment],
