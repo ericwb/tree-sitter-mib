@@ -1,6 +1,6 @@
 LANGUAGE_NAME := tree-sitter-mib
 HOMEPAGE_URL := https://github.com/ericwb/tree-sitter-mib
-VERSION := 0.1.0
+VERSION := 0.0.0
 DESCRIPTION := SNMP MIB (SMIv1/SMIv2) grammar for tree-sitter
 
 # repository

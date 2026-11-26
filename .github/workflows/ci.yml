@@ -13,11 +13,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  # Keep in step with "tree-sitter-cli" in package.json. The generated parser
-  # is checked in, and CI fails if regenerating it with this version changes it.
-  TREE_SITTER_VERSION: v0.27.2
-
 jobs:
   test:
     name: Test (${{ matrix.os }})
@@ -30,10 +25,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
+      # Installs the CLI version pinned in package.json. src/ is checked in, and
+      # CI fails if regenerating it with that version changes anything.
       - name: Set up tree-sitter CLI
-        uses: tree-sitter/setup-action/cli@v2
-        with:
-          tree-sitter-ref: ${{ env.TREE_SITTER_VERSION }}
+        uses: ./.github/actions/setup-cli
 
       # Verifies src/ is up to date with grammar.js, runs `tree-sitter test`
       # (corpus, highlight and tag tests), and tests each language binding.
@@ -68,9 +63,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up tree-sitter CLI
-        uses: tree-sitter/setup-action/cli@v2
-        with:
-          tree-sitter-ref: ${{ env.TREE_SITTER_VERSION }}
+        uses: ./.github/actions/setup-cli
 
       - name: Parse corpus
         run: scripts/check-corpus.sh corpus/netdisco-mibs test/corpus-known-failures.txt

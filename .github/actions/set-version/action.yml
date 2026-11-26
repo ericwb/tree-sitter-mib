@@ -1,0 +1,25 @@
+name: Set release version
+description: >-
+  Write a release version into every package manifest (tree-sitter.json,
+  package.json, Cargo.toml, pyproject.toml, CMakeLists.txt, Makefile).
+  The repository keeps 0.0.0 as a placeholder; the release tag is the
+  source of truth.
+
+inputs:
+  version:
+    description: The version to write, without a leading "v"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up tree-sitter CLI
+      uses: ./.github/actions/setup-cli
+
+    - name: Write version
+      shell: bash
+      run: |
+        tree-sitter version "$VERSION"
+        tree-sitter version
+      env:
+        VERSION: ${{ inputs.version }}

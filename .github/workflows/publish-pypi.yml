@@ -1,0 +1,105 @@
+# Adapted from tree-sitter/workflows (MIT, (c) 2024 tree-sitter contributors),
+# .github/workflows/package-pypi.yml at dca539e07998ac429e185349d3dd194d2c7418d3.
+# Changed: takes the release version as an input and writes it into the
+# manifests before every build (the version is baked into each wheel); parser
+# regeneration is dropped because src/ is committed and checked by CI.
+
+name: Publish to PyPI
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: The version to publish, without a leading "v"
+        required: true
+        type: string
+      python-version:
+        description: The Python version
+        default: ${{ vars.PYTHON_VERSION || '3.11' }}
+        type: string
+    secrets:
+      PYPI_API_TOKEN:
+        description: An authentication token for PyPI
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set version
+        uses: ./.github/actions/set-version
+        with:
+          version: ${{ inputs.version }}
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install build tools
+        run: pip install --upgrade pip build setuptools wheel
+      - name: Build source distribution
+        run: python -m build -n -s
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-sources
+          path: dist/*.tar.gz
+          retention-days: 2
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - windows-2025
+          - windows-11-arm
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - macos-15
+          - macos-15-intel
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set version
+        uses: ./.github/actions/set-version
+        with:
+          version: ${{ inputs.version }}
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v4.3
+        with:
+          output-dir: dist
+        env:
+          CIBW_ARCHS: native
+      - name: Upload wheels
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/*.whl
+          name: dist-wheels-${{ matrix.os }}
+          retention-days: 2
+
+  publish:
+    name: Publish package
+    needs: [build_sdist, build_wheels]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/${{ github.event.repository.name }}/
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v8
+        with:
+          path: dist
+          pattern: dist-*
+          merge-multiple: true
+      - name: List distributions
+        run: ls -l dist
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
