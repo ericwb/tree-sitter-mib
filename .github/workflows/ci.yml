@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Keep in step with "tree-sitter-cli" in package.json. The generated parser
+  # is checked in, and CI fails if regenerating it with this version changes it.
+  TREE_SITTER_VERSION: v0.27.2
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up tree-sitter CLI
+        uses: tree-sitter/setup-action/cli@v2
+        with:
+          tree-sitter-ref: ${{ env.TREE_SITTER_VERSION }}
+
+      # Verifies src/ is up to date with grammar.js, runs `tree-sitter test`
+      # (corpus, highlight and tag tests), and tests each language binding.
+      - name: Test parser and bindings
+        uses: tree-sitter/parser-test-action@v3
+        with:
+          test-rust: true
+          test-node: true
+          test-python: true
+
+      - name: Parse examples
+        shell: bash
+        run: tree-sitter parse -q -s examples/*.mib
+
+  corpus:
+    name: Real-world MIB corpus
+    runs-on: ubuntu-latest
+    env:
+      # netdisco-mibs: ~4,800 vendor MIBs. Pinned so results are reproducible;
+      # bump it deliberately and update test/corpus-known-failures.txt.
+      NETDISCO_MIBS_REF: e817a0abd518ad314651ea7bf4490926b1e4cf69
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Check out netdisco-mibs
+        uses: actions/checkout@v7
+        with:
+          repository: netdisco/netdisco-mibs
+          ref: ${{ env.NETDISCO_MIBS_REF }}
+          path: corpus/netdisco-mibs
+          persist-credentials: false
+
+      - name: Set up tree-sitter CLI
+        uses: tree-sitter/setup-action/cli@v2
+        with:
+          tree-sitter-ref: ${{ env.TREE_SITTER_VERSION }}
+
+      - name: Parse corpus
+        run: scripts/check-corpus.sh corpus/netdisco-mibs test/corpus-known-failures.txt

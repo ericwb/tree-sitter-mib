@@ -1,0 +1,15 @@
+# MIBs in netdisco-mibs (pinned in .github/workflows/ci.yml) that are known
+# not to parse. Each is malformed; the reason follows the path. CI fails on
+# any failure not listed here and asks for entries to be removed once fixed.
+
+bluesocket/BlueNotify-Mib.txt      # DEFVAL { 0.0 }
+dell/FluidFS-Traps-MIB.txt         # OBJECTS { ... list never closed
+huawei/huawei-tc-mib.mib           # enum label with trailing hyphen: foo-(225867)
+mediant/AC-CONTROL-MIB.my          # enum label with trailing hyphen: g723High-(16)
+mediant/AC-MEDIA-MIB.my            # enum label with trailing hyphen: acNetCoder-9-(31)
+net-snmp/VELOCITY-TYPES.txt        # IMPORTS without terminating ';'
+netgear/wc7520.mib                 # '&' in enum label: WPA&WPA2WithRadius
+rfc/DPI20-MIB.txt                  # IMPORTS without terminating ';'
+rfc/HPR-MIB.txt                    # comment continues on next line without '--'
+riverbed/STEELHEAD-MIB.txt         # adjacent strings: "..." "..."
+tplink/tplink-sysinfo.mib          # digits-only enum labels: 38400(2)

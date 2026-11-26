@@ -6,19 +6,40 @@
       "camelcase": "Mib",
       "title": "SNMP MIB",
       "scope": "source.mib",
-      "file-types": ["mib", "my", "smi", "smiv1", "smiv2"],
-      "injection-regex": "^(mib|smi|snmp)$",
-      "class-name": "TreeSitterMib",
+      "file-types": [
+        "mib",
+        "my",
+        "smi",
+        "smiv1",
+        "smiv2"
+      ],
       "highlights": "queries/highlights.scm",
-      "tags": "queries/tags.scm"
+      "tags": "queries/tags.scm",
+      "injection-regex": "^(mib|smi|snmp)$",
+      "class-name": "TreeSitterMib"
     }
   ],
   "metadata": {
     "version": "0.1.0",
     "license": "MIT",
     "description": "SNMP MIB (SMIv1/SMIv2) grammar for tree-sitter",
-    "authors": [{ "name": "Eric Brown" }],
-    "links": { "repository": "https://github.com/ericwb/tree-sitter-mib" }
+    "authors": [
+      {
+        "name": "Eric Brown"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/ericwb/tree-sitter-mib"
+    }
   },
-  "bindings": { "c": true, "go": false, "node": true, "python": true, "rust": true, "swift": false, "zig": false }
+  "bindings": {
+    "c": true,
+    "go": false,
+    "java": false,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": false,
+    "zig": false
+  }
 }
