@@ -99,10 +99,7 @@ jobs:
       - name: Create source tarball
         run: git ls-files | tar czf "$REPO_NAME.tar.gz" -T -
 
-      # Build provenance attestations are not available for private repositories
-      # on personal accounts, so this step only runs once the repo is public.
       - name: Generate attestations
-        if: ${{ !github.event.repository.private }}
         uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
