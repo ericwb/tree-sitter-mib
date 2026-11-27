@@ -2,9 +2,14 @@
 # .github/workflows/package-pypi.yml at dca539e07998ac429e185349d3dd194d2c7418d3.
 # Changed: takes the release version as an input and writes it into the
 # manifests before every build (the version is baked into each wheel); parser
-# regeneration is dropped because src/ is committed and checked by CI.
+# regeneration is dropped because src/ is committed and checked by CI; and the
+# upload itself moved to release.yml, because PyPI Trusted Publishing does not
+# accept a reusable workflow as the publisher.
+#
+# Uploads the source distribution and wheels as "dist-*" artifacts of the
+# calling run.
 
-name: Publish to PyPI
+name: Build Python distributions
 
 on:
   workflow_call:
@@ -17,10 +22,6 @@ on:
         description: The Python version
         default: ${{ vars.PYTHON_VERSION || '3.11' }}
         type: string
-    secrets:
-      PYPI_API_TOKEN:
-        description: An authentication token for PyPI
-        required: true
 
 permissions:
   contents: read
@@ -83,23 +84,3 @@ jobs:
           name: dist-wheels-${{ matrix.os }}
           retention-days: 2
 
-  publish:
-    name: Publish package
-    needs: [build_sdist, build_wheels]
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/project/${{ github.event.repository.name }}/
-    steps:
-      - name: Download distributions
-        uses: actions/download-artifact@v8
-        with:
-          path: dist
-          pattern: dist-*
-          merge-multiple: true
-      - name: List distributions
-        run: ls -l dist
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}

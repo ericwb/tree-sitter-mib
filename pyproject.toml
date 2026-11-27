@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,21 +9,31 @@ version = "0.0.0"
 keywords = ["incremental", "parsing", "tree-sitter", "mib"]
 classifiers = [
   "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Programming Language :: Python :: 3",
+  "Topic :: System :: Networking :: Monitoring",
   "Topic :: Software Development :: Compilers",
   "Topic :: Text Processing :: Linguistic",
   "Typing :: Typed",
 ]
 authors = [{ name = "Eric Brown" }]
 requires-python = ">=3.10"
-license.text = "MIT"
+license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 
 [project.urls]
 Homepage = "https://github.com/ericwb/tree-sitter-mib"
+Source = "https://github.com/ericwb/tree-sitter-mib"
+Issues = "https://github.com/ericwb/tree-sitter-mib/issues"
+Changelog = "https://github.com/ericwb/tree-sitter-mib/releases"
 
 [project.optional-dependencies]
-core = ["tree-sitter~=0.24"]
+core = ["tree-sitter>=0.25"]
 
 [tool.cibuildwheel]
 build = "cp310-*"
 build-frontend = "build"
+# Each wheel is installed and tested on the runner that built it.
+test-requires = ["tree-sitter>=0.25"]
+test-command = "python -m unittest discover -v -s {project}/bindings/python/tests"
