@@ -17,8 +17,15 @@ name: Release
 #   crates.io  PUBLISH_CRATES=true   CARGO_REGISTRY_TOKEN
 #   PyPI       PUBLISH_PYPI=true     (none: uses Trusted Publishing)
 #
-# PyPI Trusted Publishing must be registered on pypi.org for this repository
-# with workflow "release.yml" and environment "pypi".
+# Python packages go to TestPyPI first. The release is installed back from
+# TestPyPI and tested, and only then uploaded to PyPI. Both use Trusted
+# Publishing, registered for this repository with workflow "release.yml":
+# on test.pypi.org with environment "testpypi", on pypi.org with "pypi".
+#
+# Each registry deploys through a GitHub environment of the same name
+# (testpypi, pypi, npm, crates). The environments only accept deployments
+# from v* tags; add required reviewers under Settings > Environments to make
+# a deployment wait for approval.
 
 on:
   release:
@@ -133,12 +140,77 @@ jobs:
     with:
       version: ${{ needs.version.outputs.version }}
 
-  # This job must stay in release.yml: PyPI Trusted Publishing identifies the
-  # publisher by the top-level workflow file and does not accept a reusable
-  # workflow.
+  # The upload jobs must stay in release.yml: PyPI Trusted Publishing
+  # identifies the publisher by the top-level workflow file and does not
+  # accept a reusable workflow.
+  testpypi:
+    name: Publish to TestPyPI
+    needs: python
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/${{ github.event.repository.name }}/
+    permissions:
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v8
+        with:
+          path: dist
+          pattern: dist-*
+          merge-multiple: true
+      - name: List distributions
+        run: ls -l dist
+      # skip-existing lets a re-run get past this job after a later job failed;
+      # TestPyPI, like PyPI, never accepts the same file twice.
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+
+  testpypi-verify:
+    name: Verify TestPyPI release
+    needs: [version, testpypi]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+      # Dependencies come from PyPI; only tree-sitter-mib itself is taken from
+      # TestPyPI (--no-deps), so nothing else can be substituted from there.
+      - name: Install from TestPyPI
+        shell: bash
+        run: |
+          python -m pip install "tree-sitter>=0.25"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if python -m pip install --no-deps --no-cache-dir \
+                --index-url https://test.pypi.org/simple/ \
+                "tree-sitter-mib==$VERSION"; then
+              exit 0
+            fi
+            echo "Not available on TestPyPI yet (attempt $attempt), retrying in 30s"
+            sleep 30
+          done
+          echo "::error::tree-sitter-mib $VERSION could not be installed from TestPyPI"
+          exit 1
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+      - name: Test installed package
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          python -I -c "import importlib.metadata as m, sys; v = m.version('tree-sitter-mib'); print('installed', v); sys.exit(v != '$VERSION')"
+          python -I -m unittest discover -v -s "$GITHUB_WORKSPACE/bindings/python/tests"
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+
   pypi:
     name: Publish to PyPI
-    needs: python
+    needs: testpypi-verify
     runs-on: ubuntu-latest
     environment:
       name: pypi

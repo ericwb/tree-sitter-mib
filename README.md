@@ -154,9 +154,16 @@ Everything is configured in `tree-sitter.json`.
 
   | Registry | Turn on | Credentials |
   | --- | --- | --- |
-  | PyPI | variable `PUBLISH_PYPI=true` | none: [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) with workflow `release.yml` and environment `pypi` |
+  | PyPI (TestPyPI first) | variable `PUBLISH_PYPI=true` | none: [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) with workflow `release.yml`, registered on test.pypi.org with environment `testpypi` and on pypi.org with environment `pypi` |
   | npm | variable `PUBLISH_NPM=true` | secret `NPM_TOKEN` |
   | crates.io | variable `PUBLISH_CRATES=true` | secret `CARGO_REGISTRY_TOKEN` |
+
+  Python packages are uploaded to [TestPyPI](https://test.pypi.org/project/tree-sitter-mib/)
+  first, installed back from there and tested, and only then uploaded to
+  PyPI. Every registry upload deploys through a GitHub environment
+  (`testpypi`, `pypi`, `npm`, `crates`) that only accepts `v*` tags; add
+  required reviewers to an environment to make its deployments wait for
+  approval.
 
 ## License
 
