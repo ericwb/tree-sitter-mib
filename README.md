@@ -24,7 +24,7 @@ The parser was run against three collections of MIBs:
 | [netdisco-mibs](https://github.com/netdisco/netdisco-mibs) (≈200 vendors) | 4,849 | 99.77% |
 
 The 11 netdisco files that do not parse are malformed. They are listed, with
-the reason for each, in [`test/corpus-known-failures.txt`](test/corpus-known-failures.txt).
+the reason for each, in [`test/corpus-known-failures.txt`](https://github.com/ericwb/tree-sitter-mib/blob/main/test/corpus-known-failures.txt).
 CI re-parses the whole collection on every change and fails on any new failure.
 
 ## Being forgiving
@@ -73,6 +73,28 @@ ifIndex OBJECT-TYPE
   value: (object_identifier_value (identifier) (number)))
 ```
 
+## Using it from Python
+
+```sh
+pip install "tree-sitter-mib[core]"   # "core" pulls in the tree-sitter runtime
+```
+
+```python
+import tree_sitter_mib
+from tree_sitter import Language, Parser, Query, QueryCursor
+
+language = Language(tree_sitter_mib.language())
+parser = Parser(language)
+tree = parser.parse(open("IF-MIB.txt", "rb").read())
+
+# Every object, notification, group, ... that is assigned an OID
+tags = Query(language, tree_sitter_mib.TAGS_QUERY)
+for node in QueryCursor(tags).captures(tree.root_node).get("name", []):
+    print(node.text.decode())
+```
+
+`tree_sitter_mib.HIGHLIGHTS_QUERY` holds the highlighting query.
+
 ## Queries
 
 - `queries/highlights.scm`: syntax highlighting. Generic captures come first and
@@ -115,7 +137,9 @@ Everything is configured in `tree-sitter.json`.
 - **CI** (`.github/workflows/ci.yml`) runs on pushes to `main` and on pull
   requests, on Linux, macOS and Windows. It checks that `src/` is up to date,
   runs `tree-sitter test`, tests the Rust, Node and Python bindings, and
-  re-parses the netdisco-mibs corpus.
+  re-parses the netdisco-mibs corpus. It also builds the same Python sdist and
+  wheels a release would upload (six platforms, each wheel installed and
+  tested), without publishing them.
 - **Release** (`.github/workflows/release.yml`) runs when a release is
   published on GitHub (**Releases → Draft a new release**, choose a tag such
   as `v0.2.0`, then **Publish release**). The tag is the version: the package
@@ -124,12 +148,15 @@ Everything is configured in `tree-sitter.json`.
   bumped or committed beforehand.
 
   Every release gets a Wasm build and a complete source tarball attached, with
-  build-provenance attestations. Publishing to npm, crates.io and PyPI is
-  opt-in: set the repository variable `PUBLISH_NPM`, `PUBLISH_CRATES` or
-  `PUBLISH_PYPI` to `true` and add the matching secret `NPM_TOKEN`,
-  `CARGO_REGISTRY_TOKEN` or `PYPI_API_TOKEN`. Releases marked as a
-  pre-release get the GitHub assets but are not published to registries.
-  Tags must look like `v1.2.3`.
+  build-provenance attestations. Publishing to package registries is opt-in
+  per registry, and releases marked as a pre-release are never published to
+  them. Tags must look like `v1.2.3`.
+
+  | Registry | Turn on | Credentials |
+  | --- | --- | --- |
+  | PyPI | variable `PUBLISH_PYPI=true` | none: [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) with workflow `release.yml` and environment `pypi` |
+  | npm | variable `PUBLISH_NPM=true` | secret `NPM_TOKEN` |
+  | crates.io | variable `PUBLISH_CRATES=true` | secret `CARGO_REGISTRY_TOKEN` |
 
 ## License
 

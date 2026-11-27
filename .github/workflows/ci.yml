@@ -67,3 +67,11 @@ jobs:
 
       - name: Parse corpus
         run: scripts/check-corpus.sh corpus/netdisco-mibs test/corpus-known-failures.txt
+
+  # The same sdist and wheel builds a release uploads to PyPI, including
+  # installing and testing each wheel on its platform. Nothing is published.
+  python-dist:
+    name: Python distributions
+    uses: ./.github/workflows/build-python.yml
+    with:
+      version: 0.0.0

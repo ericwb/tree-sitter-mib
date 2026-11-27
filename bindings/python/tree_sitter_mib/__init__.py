@@ -3,28 +3,34 @@
 from ._binding import language
 
 
-def _get_query(name, file):
-    files = globals().get("_files")
-    if files is None:
-        from importlib.resources import files
-        globals()["_files"] = files
-    try:
-        query = files(f"{__package__}") / file
-        globals()[name] = query.read_text()
-    except FileNotFoundError:
-        globals()[name] = None
-    return globals()[name]
+def _read_query(file):
+    from importlib.resources import files
+    from pathlib import Path
+
+    # Installed wheels carry the queries inside the package. An editable
+    # install (pip install -e .) runs from the source tree, where they live
+    # in the repository's top-level queries/ directory.
+    candidates = [
+        files(__package__) / "queries" / file,
+        Path(__file__).resolve().parents[3] / "queries" / file,
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate.read_text(encoding="utf-8")
+    raise FileNotFoundError(f"{__package__}: query file {file!r} not found")
+
+
+_QUERIES = {
+    "HIGHLIGHTS_QUERY": "highlights.scm",
+    "TAGS_QUERY": "tags.scm",
+}
 
 
 def __getattr__(name):
-    if name == "HIGHLIGHTS_QUERY":
-        return _get_query("HIGHLIGHTS_QUERY", "queries/highlights.scm")
-    if name == "INJECTIONS_QUERY":
-        return _get_query("INJECTIONS_QUERY", "queries/injections.scm")
-    if name == "LOCALS_QUERY":
-        return _get_query("LOCALS_QUERY", "queries/locals.scm")
-    if name == "TAGS_QUERY":
-        return _get_query("TAGS_QUERY", "queries/tags.scm")
+    if name in _QUERIES:
+        query = _read_query(_QUERIES[name])
+        globals()[name] = query
+        return query
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
@@ -32,8 +38,6 @@ def __getattr__(name):
 __all__ = [
     "language",
     "HIGHLIGHTS_QUERY",
-    "INJECTIONS_QUERY",
-    "LOCALS_QUERY",
     "TAGS_QUERY",
 ]
 
